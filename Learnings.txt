@@ -1,0 +1,63 @@
+1. Testing 
+ a. MockMVc
+   i. MockMvc is a powerful testing framework in Spring Boot that allows you to test your web layer (Controllers) without starting a real HTTP server.
+		@SpringBootTest
+		@Testcontainers
+		@AutoConfigureMockMvc
+		class ProductserviceApplicationTests {
+		
+	ii. 
+2. Webclient/ RestClient/ Http /Spring Cloud Open FeignClient(For Java Httpcleitn)
+   i. in Cloud Env:
+    a. Service Discovery Server
+	    eg. It keep map of IP address with inventory service : (int service 1, int service 2, int service 3... )
+		Discovery Server : gives registry to the client
+	b. 
+ 
+ 
+ 3. 
+	a. for the one-to-many we should not have different table instead a single table with the foreign key of the many 
+		eg: orderItem - Order :
+	   each orderid is associated with many orderItem.
+	b. 
+	
+
+How to start the project:
+
+1. Product Service 
+	a. create a docker compose to fetch a mongodb image and create and start the container to store the product service data in the mongodb
+	b. docker compose up -d : It starts the container.
+	
+2. Order service
+3. Inventory Service
+
+Now, the Flyway is used to write the migrations
+
+Flyway + Dockerized MySQL — Errors & Fixes
+
+1. MySQL init.sql never ran → ERROR 1049 Unknown database
+- Cause: docker-entrypoint-initdb.d/*.sql runs only when the data dir is empty. My bind-mounted docker/mysql/data/ was already populated from a prior run, so MySQL skipped all init scripts.
+- Fix: docker compose down → move/delete the stale docker/mysql/data → docker compose up -d so it re-initializes.
+
+2. docker-compose.yml bugs
+- Cause: invalid version: '4' (Compose only goes to 3.x); corrupted volume target /var/lib/mysqlup -.
+- Fix: removed version:; corrected volume to - ./docker/mysql/data:/var/lib/mysql.
+
+3. Flyway didn't run — zero log lines, no flyway_schema_history
+- Cause: Spring Boot 4 split autoconfig into per-feature modules. Raw flyway-core = library only; the FlywayAutoConfiguration (that triggers migrations on startup) lives in the separate spring-boot-flyway module, which I didn't have.
+- Fix: replaced flyway-core with spring-boot-starter-flyway (keep flyway-mysql). Verify with mvnw dependency:tree | grep flyway → must show spring-boot-flyway.
+- Diagnosis tip: log shows Hikari + Hibernate but no Migrating schema = autoconfig missing (wiring), not a migration error.
+
+4. Separation of concerns
+- init.sql → only CREATE DATABASE IF NOT EXISTS. Flyway V1/V2 → tables + seed data. Keep ddl-auto=none.
+
+5. Entity ↔ schema name mismatch (runtime break, even with table created)
+- Cause: Boot's default snake_case naming: @Table (no name) → table inventory not t_inventory; field skuCode → column sku_code not skucode.
+- Fix: pin names — @Table(name = "t_inventory") and @Column(name = "skucode").
+
+6. Stale incremental-compile errors
+- Cause: spring-boot:run reported phantom syntax errors in already-valid files; real error was elsewhere (incomplete controller method).
+- Fix: mvnw clean compile to get the true first error.
+
+7. Verify migrations without the app compiling
+- mvnw org.flywaydb:flyway-maven-plugin:<ver>:migrate -Dflyway.url=... -Dflyway.user=... -Dflyway.password=... -Dflyway.locations=filesystem:src/main/resources/db/migration
