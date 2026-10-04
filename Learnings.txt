@@ -61,3 +61,12 @@ Flyway + Dockerized MySQL — Errors & Fixes
 
 7. Verify migrations without the app compiling
 - mvnw org.flywaydb:flyway-maven-plugin:<ver>:migrate -Dflyway.url=... -Dflyway.user=... -Dflyway.password=... -Dflyway.locations=filesystem:src/main/resources/db/migration
+
+
+
+• Showcase HLD (The "Big Picture"):
+	• Example: "Designed and implemented a decoupled, microservices-based Order Inventory system handling asynchronous event-driven communication via Kafka to ensure high availability and eventual consistency."
+	• Example: "Configured an API Gateway for centralized routing, rate limiting, and authentication, reducing cross-cutting concerns across microservices."
+• Showcase LLD (The "Code Quality"):
+	• Example: "Applied the Saga Pattern (or Outbox Pattern) to manage distributed transactions across the order and inventory services, preventing data mismatches."
+	• Example: "Implemented thread-safe Singleton and Factory patterns for Kafka producer/consumer configurations to optimize resource utilization."
